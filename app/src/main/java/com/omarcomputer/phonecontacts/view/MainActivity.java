@@ -32,10 +32,12 @@ import com.omarcomputer.phonecontacts.viewmodel.ContactViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
-    List<Contact> contactsList= new ArrayList<>();
+    List<Contact> contactsList = new ArrayList<>();
+    List<Contact> SearchContactsList = new ArrayList<>();
     RecyclerView recycler;
     ContactAdapter contactAdapter;
     ContactViewModel contactViewModel;
@@ -44,10 +46,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        contactViewModel= new ContactViewModel(this.getApplication());
+        contactViewModel = new ContactViewModel(this.getApplication());
         recycler = findViewById(R.id.recycler);
         recycler.setLayoutManager(new LinearLayoutManager(this));
-       contactAdapter = new ContactAdapter(contactsList);
+        contactAdapter = new ContactAdapter(contactsList);
         recycler.setAdapter(contactAdapter);
         Toolbar toolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
@@ -56,11 +58,13 @@ public class MainActivity extends AppCompatActivity {
         contactViewModel.contacts.observe(this, new Observer<List<Contact>>() {
             @Override
             public void onChanged(List<Contact> contacts) {
-                contactAdapter = new ContactAdapter(contacts);
+                contactsList = contacts;
+                SearchContactsList.addAll(contactsList);
+                contactAdapter = new ContactAdapter(SearchContactsList);
                 recycler.setAdapter(contactAdapter);
                 contactAdapter.notifyDataSetChanged();
-                for(Contact contact : contacts){
-                    Log.i("ContactTAG2",contact.toString());
+                for (Contact contact : contacts) {
+                    Log.i("ContactTAG2", contact.toString());
                 }
             }
         });
@@ -81,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-
+               contactAdapter.filterContacts(newText);
+                contactAdapter.notifyDataSetChanged();
                 return false;
             }
         });
@@ -107,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
 
 
 }
